@@ -9,6 +9,8 @@
 #include "llvm/IR/Metadata.h"
 #include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/IR/CallSite.h"
+#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/Transforms/IPO/PassManagerBuilder.h"
 
 using namespace llvm;
 
@@ -57,6 +59,7 @@ static void registerSyscallPass(const PassManagerBuilder &,
                                  legacy::PassManagerBase &PM) {
     PM.add(new SyscallCounter());
 }
+
 static RegisterStandardPasses
         RegisterMyPass(PassManagerBuilder::EP_EarlyAsPossible,
                        registerSyscallPass);
