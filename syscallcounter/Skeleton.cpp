@@ -1,25 +1,19 @@
 #include "llvm/Pass.h"
 #include "llvm/IR/Function.h"
-#include "llvm/IR/Module.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 using namespace llvm;
 
 namespace {
-    struct SkeletonPass : public ModulePass {
+    struct SkeletonPass : public FunctionPass {
         static char ID;
-        DenseMap<Function*, uint64_t> counts;
-        SkeletonPass() : ModulePass(ID) {}
+        SkeletonPass() : FunctionPass(ID) {}
 
-        virtual bool runOnModule(Module &F) {
-            for (auto& f : m)
-                for (auto& bb : f)
-                    for (auto& i : bb)
-                        handleInstruction(CallSite(&i));
-            return false; // False because we didn't change the Module
+        virtual bool runOnFunction(Function &F) {
+            errs() << "I saw a function called " << F.getName() << "!\n";
+            return false;
         }
-
     };
 }
 

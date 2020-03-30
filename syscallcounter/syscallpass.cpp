@@ -24,6 +24,8 @@ namespace {
         bool runOnModule(Module& m) override;
         void print(raw_ostream& out, const Module* m) const override;
         void handleInstruction(CallSite cs);
+
+        StringRef getPassName() const override { return "Syscall Counter"; }
     };
 
     bool
@@ -48,18 +50,19 @@ namespace {
 
     void
     SyscallCounter::handleInstruction(CallSite cs) {
-        // Check whether the instruction is actually a call
-        if (!cs.getInstruction()) { return; }
-        // Check whether the called function is directly invoked
-        auto called = cs.getCalledValue()->stripPointerCasts();
-        auto fun = dyn_cast<Function>(called);
-        if (!fun) { return; }
-        // Update the count for the particular call
-        auto count = counts.find(fun);
-        if (counts.end() == count) {
-            count = counts.insert(std::make_pair(fun, 0)).first;
-        }
-        ++count->second;
+        errs() << "enter handle instruction\n";
+//        // Check whether the instruction is actually a call
+//        if (!cs.getInstruction()) { return; }
+//        // Check whether the called function is directly invoked
+//        auto called = cs.getCalledValue()->stripPointerCasts();
+//        auto fun = dyn_cast<Function>(called);
+//        if (!fun) { return; }
+//        // Update the count for the particular call
+//        auto count = counts.find(fun);
+//        if (counts.end() == count) {
+//            count = counts.insert(std::make_pair(fun, 0)).first;
+//        }
+//        ++count->second;
     }
 }
 
