@@ -36,6 +36,17 @@ namespace {
     }
 
     void
+    SyscallCounter::print(raw_ostream& out, const Module* m) const {
+        out << "Function Counts\n"
+            << "===============\n";
+        for (auto& kvPair : counts) {
+            auto* function = kvPair.first;
+            uint64_t count = kvPair.second;
+            out << function->getName() << " : " << count << "\n";
+        }
+    }
+
+    void
     SyscallCounter::handleInstruction(CallSite cs) {
         // Check whether the instruction is actually a call
         if (!cs.getInstruction()) { return; }
