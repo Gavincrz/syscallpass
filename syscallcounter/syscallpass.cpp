@@ -68,12 +68,4 @@ namespace {
 
 
 char SyscallCounter::ID = 0;
-
-static void registerSyscallPass(const PassManagerBuilder &,
-                                 legacy::PassManagerBase &PM) {
-    PM.add(new SyscallCounter());
-}
-
-static RegisterStandardPasses
-        RegisterMyPass(PassManagerBuilder::EP_EarlyAsPossible,
-                       registerSyscallPass);
+static RegisterPass<SyscallCounter> X("syscallcounter", "syscall counter Pass",false,true);
