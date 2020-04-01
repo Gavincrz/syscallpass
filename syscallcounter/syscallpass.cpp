@@ -1,41 +1,56 @@
-#include "llvm/Pass.h"
-#include "llvm/IR/Function.h"
-#include "llvm/IR/Module.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/IR/InstIterator.h"
-#include "llvm/Support/Casting.h"
-#include "llvm/IR/Instructions.h"
-#include "llvm/IR/IntrinsicInst.h"
-#include "llvm/IR/Metadata.h"
-#include "llvm/IR/DebugInfoMetadata.h"
-#include "llvm/IR/CallSite.h"
+#include "llvm/ADT/Statistic.h"
+#include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LegacyPassManager.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Support/Debug.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
+#include "llvm/IR/CallSite.h"
+#include "llvm/Support/FileSystem.h"
 
 using namespace llvm;
 
 namespace {
+
+    raw_ostream &outf() {
+        // Set buffer settings to model stdout behavior.
+        std::error_code EC;
+        static raw_fd_ostream S("/home/gavin/llvm_output.txt", EC, sys::fs::OF_None);
+        assert(!EC);
+        return S;
+    }
+
+    raw_ostream & outf(StringRef filename) {
+        // Set buffer settings to model stdout behavior.
+        std::error_code EC;
+        static raw_fd_ostream S("-", EC, sys::fs::OF_None);
+        assert(!EC);
+        return S;
+    }
+
     struct SyscallCounter : public llvm::ModulePass {
         static char ID;
         DenseMap<Function*, uint64_t> counts;
         SyscallCounter()
                 : ModulePass(ID)
         { }
-        bool runOnModule(Module& m) override;
+        bool runOnModule(Module &m) override;
         void print(raw_ostream& out, const Module* m) const override;
         void handleInstruction(CallSite cs);
 
-        StringRef getPassName() const override { return "Syscall Counter"; }
+        StringRef getPassName() const override { return "Syscall Counter";}
     };
 
     bool
-    SyscallCounter::runOnModule(Module& m) {
-        for (auto& f : m)
-            for (auto& bb : f)
-                for (auto& i : bb)
-                    handleInstruction(CallSite(&i));
+    SyscallCounter::runOnModule(Module &M) {
+        outf() << "I am here run on module" << M.getName() << "\n";
+        for (auto &F : M) {
+            outf() << "I saw a function called " << F.getName() << "!\n";
+        }
+
         return false; // False because we didn't change the Module
     }
+
 
     void
     SyscallCounter::print(raw_ostream& out, const Module* m) const {
@@ -68,4 +83,14 @@ namespace {
 
 
 char SyscallCounter::ID = 0;
-static RegisterPass<SyscallCounter> X("syscallcounter", "syscall counter Pass",false,true);
+static void registerSyscallPass(const PassManagerBuilder &,
+                                 legacy::PassManagerBase &PM) {
+    PM.add(new SyscallCounter());
+}
+
+static RegisterStandardPasses
+        RegisterMyPass(PassManagerBuilder::EP_ModuleOptimizerEarly, registerSyscallPass);
+
+static RegisterStandardPasses
+        RegisterMyPass0(PassManagerBuilder::EP_EnabledOnOptLevel0, registerSyscallPass);
+
