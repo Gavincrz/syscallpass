@@ -7,8 +7,11 @@
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/IR/CallSite.h"
 #include "llvm/Support/FileSystem.h"
+#include "llvm/Support/CommandLine.h"
 
 using namespace llvm;
+static cl::opt<string> OutputFilename("sccoutput",
+        cl::desc("Specify output filename for syscall counter"), cl::value_desc("filename"));
 
 namespace {
 
@@ -37,12 +40,15 @@ namespace {
         bool runOnModule(Module &m) override;
         void print(raw_ostream& out, const Module* m) const override;
         void handleInstruction(CallSite cs);
-
+        StringRef outputFile;
         StringRef getPassName() const override { return "Syscall Counter";}
     };
 
     bool
     SyscallCounter::runOnModule(Module &M) {
+        if (OutputFilename.getNumOccurrences() > 0)
+            outputFile = OutputFilename;
+            errs() << "output file to: " << outputFile << "\n";
         outf() << "I am here run on module" << M.getName() << "\n";
         for (auto &F : M) {
             outf() << "I saw a function called " << F.getName() << "!\n";
