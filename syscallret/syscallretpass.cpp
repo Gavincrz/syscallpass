@@ -26,11 +26,10 @@ namespace {
         return S;
     }
 
-
-    struct SyscallCounter : public llvm::ModulePass {
+    struct SyscallRetPass : public llvm::ModulePass {
         static char ID;
         DenseMap<Function*, uint64_t> counts;
-        SyscallCounter()
+        SyscallRetPass()
                 : ModulePass(ID)
         {
             errs() << "pass initialize" << "\n";
@@ -43,7 +42,7 @@ namespace {
     };
 
     bool
-    SyscallCounter::runOnModule(Module &M) {
+    SyscallRetPass::runOnModule(Module &M) {
         errs() << " running.. \n";
         outf() << "Module: " << M.getName() << "\n";
         for (auto &F : M) {
@@ -59,7 +58,7 @@ namespace {
 
 
     void
-    SyscallCounter::print(raw_ostream& out, const Module* m) const {
+    SyscallRetPass::print(raw_ostream& out, const Module* m) const {
         out << "Function Counts\n"
             << "===============\n";
         for (auto& kvPair : counts) {
@@ -70,7 +69,7 @@ namespace {
     }
 
     void
-    SyscallCounter::handleInstruction(CallSite cs) {
+    SyscallRetPass::handleInstruction(CallSite cs) {
         errs() << "enter handle instruction\n";
         // Check whether the instruction is actually a call
         if (!cs.getInstruction()) { return; }
@@ -83,16 +82,16 @@ namespace {
 }
 
 
-char SyscallCounter::ID = 0;
+char SyscallRetPass::ID = 0;
 
-static void registerSyscallPass(const PassManagerBuilder &,
+static void registerSyscallRetPass(const PassManagerBuilder &,
                                  legacy::PassManagerBase &PM) {
-    PM.add(new SyscallCounter());
+    PM.add(new SyscallRetPass());
 }
 
 static RegisterStandardPasses
-        RegisterMyPass(PassManagerBuilder::EP_ModuleOptimizerEarly, registerSyscallPass);
+        RegisterMyPass(PassManagerBuilder::EP_ModuleOptimizerEarly, registerSyscallRetPass);
 
 static RegisterStandardPasses
-        RegisterMyPass0(PassManagerBuilder::EP_EnabledOnOptLevel0, registerSyscallPass);
+        RegisterMyPass0(PassManagerBuilder::EP_EnabledOnOptLevel0, registerSyscallRetPass);
 
