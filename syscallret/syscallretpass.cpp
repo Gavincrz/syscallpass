@@ -8,6 +8,7 @@
 #include "llvm/IR/CallSite.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/ADT/StringSet.h"
 
 using namespace std;
 using namespace llvm;
@@ -18,10 +19,16 @@ using namespace llvm;
 
 namespace {
 
+    const StringSet<> syscallSet = {
+            "read", "open", "openat", "lstat", "write",
+            "close", "stat", "fstat", "lstat", "getpid",
+            "lseek", "epoll_wait", "dup2", "dup3"
+    };
+
     raw_ostream &outf() {
         // Set buffer settings to model stdout behavior.
         std::error_code EC;
-        static raw_fd_ostream S("/home/gavin/llvm_output.txt", EC, sys::fs::OF_None);
+        static raw_fd_ostream S("/home/gavin/llvm_syscallret.txt", EC, sys::fs::OF_None);
         assert(!EC);
         return S;
     }
@@ -44,15 +51,11 @@ namespace {
     bool
     SyscallRetPass::runOnModule(Module &M) {
         errs() << " running.. \n";
-        outf() << "Module: " << M.getName() << "\n";
         for (auto &F : M) {
-            outf() << "Function: " << F.getName() << "\n";
             for (auto &B : F)
                 for (auto &I : B)
                     handleInstruction(CallSite(&I));
-            outf() << "Function end\n";
         }
-        outf() << "Module end\n";
         return false; // False because we didn't change the Module
     }
 
@@ -67,17 +70,24 @@ namespace {
             out << function->getName() << " : " << count << "\n";
         }
     }
+    bool
+    isSyscall(StringRef ) {
+
+    }
 
     void
     SyscallRetPass::handleInstruction(CallSite cs) {
-        errs() << "enter handle instruction\n";
         // Check whether the instruction is actually a call
         if (!cs.getInstruction()) { return; }
         // Check whether the called function is directly invoked
         auto called = cs.getCalledValue()->stripPointerCasts();
         auto fun = dyn_cast<Function>(called);
         if (!fun) { return; }
-        outf() << fun->getName() << "\n";
+        StringRef funcName = fun->getName();
+        if (syscallSet.count(funcName)) {
+            errs() << "found syscall instruction\n";
+            cs.dump();
+        }
     }
 }
 
