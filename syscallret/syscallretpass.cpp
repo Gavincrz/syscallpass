@@ -139,6 +139,10 @@ namespace {
                 if (opCode == Instruction::And) {
                     handleUsage(i, syscall, offsetL, offsetR);
                 }
+                if (auto *castI = dyn_cast<CastInst>(i)) {
+                    //errs() << "cast opcode: " << castI->getOpcodeName() << "\n";
+                    handleUsage(i, syscall, offsetL, offsetR);
+                }
                 if (opCode == Instruction::ICmp) {
                     ICmpInst *CMPI= dyn_cast<ICmpInst>(i);
 //                    errs() << "comp instruction found for syscall " << syscall
@@ -232,6 +236,7 @@ namespace {
                     // get the load instruction
                     for (User* ptrUser : ptrInst->users()) {
                         if (LoadInst * loadInst = dyn_cast<LoadInst>(ptrUser)) {
+                            errs() << "found syscall: " << outNameStr << "\n";
                             handleUsage(loadInst, outNameStr, 0, 0);
                         }
                     }
@@ -259,6 +264,7 @@ namespace {
         }
         Twine retName = Twine(syscallName + "~" + "ret_v");
         StringRef retNameStr = retName.str();
+        errs() << "found syscall: " << retNameStr << "\n";
         handleUsage(I, retNameStr, 0, 0);
 
         // handle each retbuf separately
