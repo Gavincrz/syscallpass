@@ -21,7 +21,8 @@ namespace {
     raw_ostream &outf() {
         // Set buffer settings to model stdout behavior.
         std::error_code EC;
-        static raw_fd_ostream S("/home/gavin/llvm_output.txt", EC, sys::fs::OF_None);
+        static raw_fd_ostream S("/home/gavin/llvm_output.txt", EC, sys::fs::CD_OpenAlways, sys::fs::FA_Write,
+                                sys::fs::OF_Append);
         assert(!EC);
         return S;
     }
@@ -71,7 +72,7 @@ namespace {
 
     void
     SyscallCounter::handleInstruction(CallSite cs) {
-        errs() << "enter handle instruction\n";
+        // errs() << "enter handle instruction\n";
         // Check whether the instruction is actually a call
         if (!cs.getInstruction()) { return; }
         // Check whether the called function is directly invoked

@@ -31,7 +31,8 @@ namespace {
     raw_ostream &outf() {
         // Set buffer settings to model stdout behavior.
         std::error_code EC;
-        static raw_fd_ostream S("/home/gavin/llvm_syscallret.txt", EC, sys::fs::OF_None);
+        static raw_fd_ostream S("/home/gavin/llvm_syscallret.txt", EC, sys::fs::CD_OpenAlways, sys::fs::FA_Write,
+                                sys::fs::OF_Append);
         assert(!EC);
         return S;
     }
@@ -220,7 +221,7 @@ namespace {
         for (User* user : arg->users()){
             GetElementPtrInst * ptrInst = dyn_cast<GetElementPtrInst>(user);
             if (ptrInst){
-                ptrInst->dump();
+                // ptrInst->dump();
                 // get the second index
                 User::op_iterator I = ptrInst->idx_begin();
                 ++I;
