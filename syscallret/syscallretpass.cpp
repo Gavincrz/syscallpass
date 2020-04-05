@@ -103,6 +103,7 @@ namespace {
                     handleUsage(dst, syscall, offsetL, offsetR);
                 }
                 if (opCode == Instruction::Load) {
+//                    i->dump();
                     handleUsage(i, syscall, offsetL, offsetR);
                 }
                 if (opCode == Instruction::Add) {
@@ -145,6 +146,7 @@ namespace {
                 }
                 if (opCode == Instruction::ICmp) {
                     ICmpInst *CMPI= dyn_cast<ICmpInst>(i);
+//                    CMPI->dump();
 //                    errs() << "comp instruction found for syscall " << syscall
 //                        << " offsetL: " << offsetL << " offsetR: " << offsetR << "\n";
                     CmpInst::Predicate pred = CMPI->getPredicate();
@@ -217,18 +219,27 @@ namespace {
             }
     }
 
-    void handleStruct(CallSite cs, int index, int offset, StringRef syscallName, StringRef name) {
+    void handleStruct(CallSite cs, int index, int ptindex, int offset, StringRef syscallName, StringRef name) {
         Value *arg = cs.getArgument(index);
-        Twine outName = Twine(syscallName + "~" + name);
-        StringRef outNameStr = outName.str();
+        const Twine &outName = syscallName + "~" + name;
+        SmallString<128> nameStorage;
+        StringRef outNameStr = outName.toStringRef(nameStorage);
+//
+//        selfGEP = dyn_cast<GetElementPtrInst>(arg);
+//        if (selfGEG) {
+//
+//        }
 
         for (User* user : arg->users()){
             GetElementPtrInst * ptrInst = dyn_cast<GetElementPtrInst>(user);
             if (ptrInst){
                 // ptrInst->dump();
-                // get the second index
+                // get the ptindex index
+                if (ptindex >=  ptrInst->getNumIndices()) {
+                    return;
+                }
                 User::op_iterator I = ptrInst->idx_begin();
-                ++I;
+                I += ptindex;
                 Value* indexV = I->get();
                 // get constant value
                 ConstantInt* CI = dyn_cast<ConstantInt>(indexV);
@@ -257,21 +268,40 @@ namespace {
         if (!fun) {
             return;
         }
+
         StringRef syscallName = fun->getName();
+        if (syscallName.equals("__errno_location")) {
+            errs() << "found errno" << "\n";
+            handleUsage(I, "errno", 0, 0);
+        }
         /* analyze return value */
         if (!syscallSet.count(syscallName)) {
             return;
         }
-        Twine retName = Twine(syscallName + "~" + "ret_v");
-        StringRef retNameStr = retName.str();
-        errs() << "found syscall: " << retNameStr << "\n";
+
+        const Twine &retName = syscallName + "~ret_v";
+        SmallString<128> nameStorage;
+        StringRef retNameStr = retName.toStringRef(nameStorage);
+        errs() << "found syscall: " << retName << " " << retNameStr <<"\n";
         handleUsage(I, retNameStr, 0, 0);
 
         // handle each retbuf separately
         if (syscallName.equals("fstat")) {
-            handleStruct(cs, 1, 3, syscallName, "st_mode_v");
-//            handleStruct(cs, 1, 3, syscallName, "st_mode_v");
+            handleStruct(cs, 1, 1, 3, syscallName, "st_mode_v");
         }
+        if (syscallName.equals("stat")) {
+            handleStruct(cs, 1, 1, 3, syscallName, "st_mode_v");
+        }
+        if (syscallName.equals("lstat")) {
+            handleStruct(cs, 1, 1, 3, syscallName, "st_mode_v");
+        }
+//        if (syscallName.equals("epoll_wait")) {
+//            handleStruct(cs, 1, 2, 0, syscallName, "events_v");
+//        }
+//        if (syscallName.equals("epoll_wait")) {
+//            handleStruct(cs, 1, 2, 1, syscallName, "data_v");
+//        }
+
     }
 }
 
