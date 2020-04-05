@@ -34,7 +34,7 @@ namespace {
         SyscallCounter()
                 : ModulePass(ID)
         {
-            errs() << "pass initialize" << "\n";
+            // errs() << "pass initialize" << "\n";
         }
         bool runOnModule(Module &m) override;
         void print(raw_ostream& out, const Module* m) const override;
@@ -45,7 +45,7 @@ namespace {
 
     bool
     SyscallCounter::runOnModule(Module &M) {
-        errs() << " running.. \n";
+        // errs() << " running.. \n";
         outf() << "Module: " << M.getName() << "\n";
         for (auto &F : M) {
             outf() << "Function: " << F.getName() << "\n";
