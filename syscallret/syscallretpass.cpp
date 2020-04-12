@@ -81,7 +81,6 @@ namespace {
 
     bool
     SyscallRetPass::runOnModule(Module &M) {
-        M.dump();
         // errs() << " running on Module .. " << M.getName() << "\n";
         for (auto &F : M) {
             for (auto &B : F)
@@ -249,21 +248,10 @@ namespace {
             }
     }
 
-    void handleStruct(CallSite cs, int index, int ptindex, int offset, StringRef syscallName, StringRef name) {
-        Value *arg = cs.getArgument(index);
-        const Twine &outName = syscallName + "~" + name;
-        SmallString<128> nameStorage;
-        StringRef outNameStr = outName.toStringRef(nameStorage);
-//
-//        selfGEP = dyn_cast<GetElementPtrInst>(arg);
-//        if (selfGEG) {
-//
-//        }
-
+    void handle_arg_GEP(Value *arg, int ptindex, int offset, StringRef outNameStr) {
         for (User* user : arg->users()){
             GetElementPtrInst * ptrInst = dyn_cast<GetElementPtrInst>(user);
             if (ptrInst){
-                // ptrInst->dump();
                 // get the ptindex index
                 if (ptindex >=  ptrInst->getNumIndices()) {
                     return;
@@ -276,15 +264,45 @@ namespace {
                 if (CI && CI->getSExtValue() == offset) {
                     // get the load instruction
                     for (User* ptrUser : ptrInst->users()) {
-                        if (LoadInst * loadInst = dyn_cast<LoadInst>(ptrUser)) {
-                            errs() << "found syscall: " << outNameStr << "\n";
-                            handleUsage(loadInst, outNameStr, 0, 0);
-                        }
+                        handleUsage(ptrUser, outNameStr, 0, 0);
+//                        if (LoadInst * loadInst = dyn_cast<LoadInst>(ptrUser)) {
+//                            errs() << "found syscall: " << outNameStr << "\n";
+//                            handleUsage(loadInst, outNameStr, 0, 0);
+//                        }
                     }
                 }
             }
-
         }
+    }
+
+    void handleStruct(CallSite cs, int index, int ptindex, int offset, StringRef syscallName, StringRef name) {
+        Value *arg = cs.getArgument(index);
+        const Twine &outName = syscallName + "~" + name;
+        SmallString<128> nameStorage;
+        StringRef outNameStr = outName.toStringRef(nameStorage);
+//
+        GetElementPtrInst *selfGEP = dyn_cast<GetElementPtrInst>(arg);
+        if (selfGEP) {
+//            selfGEP->dump();
+            Value * operand = selfGEP->getPointerOperand();
+            if (operand) {
+//                operand->dump();
+                for (User* operand : operand->users()) {
+                    // find arrayidx
+//                    operand->dump();
+                    GetElementPtrInst * operandUser = dyn_cast<GetElementPtrInst>(operand);
+                    if (operandUser && operandUser != arg){
+                        handle_arg_GEP(operandUser, ptindex, offset, outNameStr);
+                    }
+                }
+            }
+        }
+        else {
+            handle_arg_GEP(arg, ptindex, offset, outNameStr);
+        }
+
+
+
     }
 
     void
@@ -345,12 +363,12 @@ namespace {
         if (syscallName.equals("lstat")) {
             handleStruct(cs, 1, 1, 3, syscallName, "st_mode_v");
         }
-//        if (syscallName.equals("epoll_wait")) {
-//            handleStruct(cs, 1, 2, 0, syscallName, "events_v");
-//        }
-//        if (syscallName.equals("epoll_wait")) {
-//            handleStruct(cs, 1, 2, 1, syscallName, "data_v");
-//        }
+        if (syscallName.equals("epoll_wait")) {
+            handleStruct(cs, 1, 1, 0, syscallName, "events_v");
+        }
+        if (syscallName.equals("epoll_wait")) {
+            handleStruct(cs, 1, 1, 1, syscallName, "data_v");
+        }
 
     }
 }
