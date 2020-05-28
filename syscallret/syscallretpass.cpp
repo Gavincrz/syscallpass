@@ -96,9 +96,13 @@ namespace {
         return false; // False because we didn't change the Module
     }
 
-    ConstantInt* getConstant(Value * v) {
+
+    Value* getConstant(Value * v) {
+        Value * retv;
         ConstantInt* CI = dyn_cast<ConstantInt>(v);
         if (CI) return CI;
+        ConstantPointerNull* PN = dyn_cast<ConstantPointerNull>(v);
+        if (PN) return PN;
         Instruction *I = dyn_cast<Instruction>(v);
         if (!I) return nullptr;
         switch (I->getOpcode()){
@@ -112,7 +116,7 @@ namespace {
                     if (opCode == Instruction::Store) {
                         StoreInst *SI = cast<StoreInst>(II);
                         if (SI && SI->getOperand(1) == loadV) {
-                            CI = getConstant(SI->getOperand(0));
+                            retv = getConstant(SI->getOperand(0));
                         }
                     }
                 }
@@ -154,15 +158,25 @@ namespace {
                         errs() << "how could this happen? \n";
                         return;
                     }
-                    ConstantInt* CI = getConstant(opPtr);
-                    if (!CI) {
-                        return;
+
+                    int offset = 0;
+                    Value* retv = getConstant(opPtr);
+                    ConstantInt* CI = dyn_cast<ConstantInt>(opPtr);
+                    if (CI) {
+                        offset = CI->getSExtValue();
                     }
                     else {
-                        int offset = CI->getSExtValue();
-                        // errs() << "offset add " << offset << "\n";
-                        handleUsage(i, syscall, offsetL + offset, offsetR);
+                        ConstantPointerNull* PN = dyn_cast<ConstantPointerNull>(opPtr);
+                        if (PN) {
+                            offset = 0;
+                        }
+                        else {
+                            return;
+                        }
                     }
+                    // errs() << "offset add " << offset << "\n";
+                    handleUsage(i, syscall, offsetL + offset, offsetR);
+
                 }
                 else if (GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(i)) {
                     handleUsage(i, syscall, offsetL, offsetR);
@@ -220,11 +234,23 @@ namespace {
                         errs() << "how could this happen? \n";
                         return;
                     }
-                    ConstantInt* CI = getConstant(opPtr);
-                    if (!CI) {
-                        return;
+
+                    int target = 0;
+                    Value* retv = getConstant(opPtr);
+                    ConstantInt* CI = dyn_cast<ConstantInt>(opPtr);
+                    if (CI) {
+                        target = CI->getSExtValue() - offsetL;
                     }
-                    int target = CI->getSExtValue() - offsetL;
+                    else {
+                        ConstantPointerNull* PN = dyn_cast<ConstantPointerNull>(opPtr);
+                        if (PN) {
+                            target = 0 - offsetL;
+                        }
+                        else {
+                            return;
+                        }
+                    }
+
                     switch (pred) {
                         case CmpInst::ICMP_EQ:
                         case CmpInst::ICMP_NE:
