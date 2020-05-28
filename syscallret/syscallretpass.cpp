@@ -25,7 +25,9 @@ namespace {
     const StringSet<> syscallSet = {
             "read", "open", "openat", "lstat", "write",
             "close", "stat", "fstat", "lstat", "getpid",
-            "lseek", "epoll_wait", "dup2", "dup3"
+            "lseek", "epoll_wait", "dup2", "dup3", "epoll_create", "poll", "socket",
+            "setsockopt", "listen", "epoll_ctl", "setgroups", "getuid", "access", "getgid",
+            "setuid", "setgid", "connect"
     };
 
     const StringSet<> all_syscall = {"read", "write", "open", "close", "stat", "fstat", "lstat", "poll", "lseek",
@@ -368,6 +370,12 @@ namespace {
         }
         if (syscallName.equals("epoll_wait")) {
             handleStruct(cs, 1, 1, 1, syscallName, "data_v");
+        }
+        if (syscallName.equals("poll")) {
+            handleStruct(cs, 0, 1, 2, syscallName, "revents_v");
+        }
+        if (syscallName.equals("poll")) {
+            handleStruct(cs, 0, 1, 0, syscallName, "fd_v");
         }
 
     }
