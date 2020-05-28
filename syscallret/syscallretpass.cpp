@@ -27,7 +27,7 @@ namespace {
             "close", "stat", "fstat", "lstat", "getpid",
             "lseek", "epoll_wait", "dup2", "dup3", "epoll_create", "poll", "socket",
             "setsockopt", "listen", "epoll_ctl", "setgroups", "getuid", "access", "getgid",
-            "setuid", "setgid", "connect", "prlimit", "getsockopt", "accept", "accept4"
+            "setuid", "setgid", "connect", "prlimit", "getsockopt", "accept", "accept4", "sendfile"
     };
 
     const StringSet<> all_syscall = {"read", "write", "open", "close", "stat", "fstat", "lstat", "poll", "lseek",
@@ -430,6 +430,9 @@ namespace {
         if (syscallName.equals("accept4") || syscallName.equals("accept")) {
             handleArgument(cs, 1, syscallName, "addr_v");
             handleArgument(cs, 2, syscallName, "addrlen_v");
+        }
+        if (syscallName.equals("sendfile")) {
+            handleArgument(cs, 2, syscallName, "offset_v");
         }
     }
 }
