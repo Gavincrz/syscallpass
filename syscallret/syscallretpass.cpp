@@ -27,7 +27,7 @@ namespace {
             "close", "stat", "fstat", "lstat", "getpid",
             "lseek", "epoll_wait", "dup2", "dup3", "epoll_create", "poll", "socket",
             "setsockopt", "listen", "epoll_ctl", "setgroups", "getuid", "access", "getgid",
-            "setuid", "setgid", "connect", "prlimit"
+            "setuid", "setgid", "connect", "prlimit", "getsockopt"
     };
 
     const StringSet<> all_syscall = {"read", "write", "open", "close", "stat", "fstat", "lstat", "poll", "lseek",
@@ -277,6 +277,24 @@ namespace {
         }
     }
 
+    void handleArgument(CallSite cs, int index, StringRef syscallName, StringRef name) {
+        Value *arg = cs.getArgument(index);
+        const Twine &outName = syscallName + "~" + name;
+        SmallString<128> nameStorage;
+        StringRef outNameStr = outName.toStringRef(nameStorage);
+        // check if it self is a cast instruction, if so, turn it back to the origin
+
+        if (auto *castI = dyn_cast<CastInst>(arg)) {
+            Value *origin =  castI.getOperand(0);
+            origin.dump();
+            // find comparison on the origin
+            handleUsage(origin, outNameStr, 0, 0);
+        }
+        else {
+            handleUsage(arg, outNameStr, 0, 0);
+        }
+    }
+
     void handleStruct(CallSite cs, int index, int ptindex, int offset, StringRef syscallName, StringRef name) {
         Value *arg = cs.getArgument(index);
         const Twine &outName = syscallName + "~" + name;
@@ -383,7 +401,10 @@ namespace {
             handleStruct(cs, 3, 1, 0, syscallName, "rlim_cur_v");
             handleStruct(cs, 3, 1, 1, syscallName, "rlim_max_v");
         }
-
+        if (syscallName.equals("getsockopt")) {
+            handleArgument(cs, 3, syscallName, "optval_v");
+            handleArgument(cs, 4, syscallName, "optlen_v");
+        }
     }
 }
 
