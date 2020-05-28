@@ -84,6 +84,7 @@ namespace {
     bool
     SyscallRetPass::runOnModule(Module &M) {
         // errs() << " running on Module .. " << M.getName() << "\n";
+//        M.dump();
         for (auto &F : M) {
             for (auto &B : F)
                 for (auto &I : B) {
@@ -134,7 +135,6 @@ namespace {
                     handleUsage(dst, syscall, offsetL, offsetR);
                 }
                 else if (opCode == Instruction::Load) {
-//                    i->dump();
                     handleUsage(i, syscall, offsetL, offsetR);
                 }
                 else if (opCode == Instruction::Add) {
@@ -163,6 +163,9 @@ namespace {
                         handleUsage(i, syscall, offsetL + offset, offsetR);
                     }
                 }
+                else if (GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(i)) {
+                    handleUsage(i, syscall, offsetL, offsetR);
+                }
                 else if (opCode == Instruction::Sub) {
                     auto *subInst = dyn_cast<BinaryOperator>(i);
                     // errs() << "Sub instruction: \n ";
@@ -178,7 +181,12 @@ namespace {
                 else if (SwitchInst *SwI = dyn_cast<SwitchInst>(i)) {
                     // handle swith Instruction
                     // check if condition is self
+//                    errs() << "switch statement found\n";
+//                    SwI->dump();
+//                    SwI->getCondition()->dump();
+//                    I->dump();
                     if (SwI->getCondition() == I) {
+//                        errs() << "condition is self\n";
                         // iterate through all the cases
                         for (SwitchInst::CaseIt it = SwI->case_begin(), e = SwI->case_end();
                              it != e; ++it) {
