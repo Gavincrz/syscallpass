@@ -356,14 +356,16 @@ namespace {
         handleUsage(I, retNameStr, 0, 0);
 
         // handle each retbuf separately
-        if (syscallName.equals("fstat")) {
+        if (syscallName.equals("fstat") || syscallName.equals("stat") || syscallName.equals("lstat")) {
+            handleStruct(cs, 1, 1, 0, syscallName, "st_dev_v");
+            handleStruct(cs, 1, 1, 1, syscallName, "st_ino_v");
+            handleStruct(cs, 1, 1, 2, syscallName, "st_nlink_v");
             handleStruct(cs, 1, 1, 3, syscallName, "st_mode_v");
-        }
-        if (syscallName.equals("stat")) {
-            handleStruct(cs, 1, 1, 3, syscallName, "st_mode_v");
-        }
-        if (syscallName.equals("lstat")) {
-            handleStruct(cs, 1, 1, 3, syscallName, "st_mode_v");
+            handleStruct(cs, 1, 1, 4, syscallName, "st_uid_v");
+            handleStruct(cs, 1, 1, 5, syscallName, "st_gid_v");
+            handleStruct(cs, 1, 1, 8, syscallName, "st_size_v");
+            handleStruct(cs, 1, 1, 9, syscallName, "st_blksize_v");
+            handleStruct(cs, 1, 1, 10, syscallName, "st_block_v");
         }
         if (syscallName.equals("epoll_wait")) {
             handleStruct(cs, 1, 1, 0, syscallName, "events_v");
