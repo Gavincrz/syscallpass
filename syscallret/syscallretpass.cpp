@@ -180,7 +180,7 @@ namespace {
                     // check if condition is self
                     if (SwI->getCondition() == I) {
                         // iterate through all the cases
-                        for (SwitchInst::CaseIt it = SwI->case_begin(), e = SI->case_end();
+                        for (SwitchInst::CaseIt it = SwI->case_begin(), e = SwI->case_end();
                              it != e; ++it) {
                             // get value of each case
                             ConstantInt * CI = it->getCaseValue();
