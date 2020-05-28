@@ -27,7 +27,8 @@ namespace {
             "close", "stat", "fstat", "lstat", "getpid",
             "lseek", "epoll_wait", "dup2", "dup3", "epoll_create", "poll", "socket",
             "setsockopt", "listen", "epoll_ctl", "setgroups", "getuid", "access", "getgid",
-            "setuid", "setgid", "connect", "prlimit", "getsockopt", "accept", "accept4", "sendfile"
+            "setuid", "setgid", "connect", "prlimit", "getsockopt", "accept", "accept4",
+            "sendfile", "getcwd"
     };
 
     const StringSet<> all_syscall = {"read", "write", "open", "close", "stat", "fstat", "lstat", "poll", "lseek",
