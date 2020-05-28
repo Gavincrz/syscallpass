@@ -27,7 +27,7 @@ namespace {
             "close", "stat", "fstat", "lstat", "getpid",
             "lseek", "epoll_wait", "dup2", "dup3", "epoll_create", "poll", "socket",
             "setsockopt", "listen", "epoll_ctl", "setgroups", "getuid", "access", "getgid",
-            "setuid", "setgid", "connect", "prlimit", "getsockopt"
+            "setuid", "setgid", "connect", "prlimit", "getsockopt", "accept", "accept4"
     };
 
     const StringSet<> all_syscall = {"read", "write", "open", "close", "stat", "fstat", "lstat", "poll", "lseek",
@@ -133,11 +133,11 @@ namespace {
                     }
                     handleUsage(dst, syscall, offsetL, offsetR);
                 }
-                if (opCode == Instruction::Load) {
+                else if (opCode == Instruction::Load) {
 //                    i->dump();
                     handleUsage(i, syscall, offsetL, offsetR);
                 }
-                if (opCode == Instruction::Add) {
+                else if (opCode == Instruction::Add) {
                     auto *addInst = dyn_cast<BinaryOperator>(i);
                     // errs() << "add instruction: \n ";
                     Value *opPtr;
@@ -163,19 +163,33 @@ namespace {
                         handleUsage(i, syscall, offsetL + offset, offsetR);
                     }
                 }
-                if (opCode == Instruction::Sub) {
+                else if (opCode == Instruction::Sub) {
                     auto *subInst = dyn_cast<BinaryOperator>(i);
                     // errs() << "Sub instruction: \n ";
                     // TODO: handle sub
                 }
-                if (opCode == Instruction::And) {
+                else if (opCode == Instruction::And) {
                     handleUsage(i, syscall, offsetL, offsetR);
                 }
-                if (auto *castI = dyn_cast<CastInst>(i)) {
+                else if (auto *castI = dyn_cast<CastInst>(i)) {
                     //errs() << "cast opcode: " << castI->getOpcodeName() << "\n";
                     handleUsage(i, syscall, offsetL, offsetR);
                 }
-                if (opCode == Instruction::ICmp) {
+                else if (SwitchInst *SwI = dyn_cast<SwitchInst>(i)) {
+                    // handle swith Instruction
+                    // check if condition is self
+                    if (SwI->getCondition() == I) {
+                        // iterate through all the cases
+                        for (SwitchInst::CaseIt it = SwI->case_begin(), e = SI->case_end();
+                             it != e; ++it) {
+                            // get value of each case
+                            ConstantInt * CI = it->getCaseValue();
+                            int target = CI->getSExtValue() - offsetL;
+                            outf() << syscall << " == " << target << "\n";
+                        }
+                    }
+                }
+                else if (opCode == Instruction::ICmp) {
                     ICmpInst *CMPI= dyn_cast<ICmpInst>(i);
 //                    CMPI->dump();
 //                    errs() << "comp instruction found for syscall " << syscall
@@ -404,6 +418,10 @@ namespace {
         if (syscallName.equals("getsockopt")) {
             handleArgument(cs, 3, syscallName, "optval_v");
             handleArgument(cs, 4, syscallName, "optlen_v");
+        }
+        if (syscallName.equals("accept4") || syscallName.equals("accept")) {
+            handleArgument(cs, 1, syscallName, "addr_v");
+            handleArgument(cs, 2, syscallName, "addrlen_v");
         }
     }
 }
