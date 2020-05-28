@@ -285,8 +285,8 @@ namespace {
         // check if it self is a cast instruction, if so, turn it back to the origin
 
         if (auto *castI = dyn_cast<CastInst>(arg)) {
-            Value *origin =  castI.getOperand(0);
-            origin.dump();
+            Value *origin =  castI->getOperand(0);
+            origin->dump();
             // find comparison on the origin
             handleUsage(origin, outNameStr, 0, 0);
         }
