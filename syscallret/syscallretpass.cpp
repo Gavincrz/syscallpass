@@ -443,9 +443,9 @@ namespace {
         if (syscallName.equals("poll")) {
             handleStruct(cs, 0, 1, 2, syscallName, "revents_v");
         }
-        if (syscallName.equals("poll")) {
-            handleStruct(cs, 0, 1, 0, syscallName, "fd_v");
-        }
+//        if (syscallName.equals("poll")) {
+//            handleStruct(cs, 0, 1, 0, syscallName, "fd_v");
+//        }
         if (syscallName.equals("prlimit")) {
             handleStruct(cs, 3, 1, 0, syscallName, "rlim_cur_v");
             handleStruct(cs, 3, 1, 1, syscallName, "rlim_max_v");
