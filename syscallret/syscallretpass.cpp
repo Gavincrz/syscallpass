@@ -440,9 +440,9 @@ namespace {
         if (syscallName.equals("epoll_wait")) {
             handleStruct(cs, 1, 1, 1, syscallName, "data_v");
         }
-        if (syscallName.equals("poll")) {
-            handleStruct(cs, 0, 1, 2, syscallName, "revents_v");
-        }
+//        if (syscallName.equals("poll")) {
+//            handleStruct(cs, 0, 1, 2, syscallName, "revents_v");
+//        }
 //        if (syscallName.equals("poll")) {
 //            handleStruct(cs, 0, 1, 0, syscallName, "fd_v");
 //        }
