@@ -29,7 +29,8 @@ namespace {
             "setsockopt", "listen", "epoll_ctl", "setgroups", "getuid", "access", "getgid",
             "setuid", "setgid", "connect", "prlimit", "getsockopt", "accept", "accept4",
             "sendfile", "getcwd", "writev", "setsid", "sendto", "chroot", "getdents", "getppid", "dup",
-            "nanosleep"
+            "nanosleep", "getsockname", "pipe", "clock_gettime", "select", "geteuid", "getegid", "uname",
+            "recvmsg", "getpgrp", "setresuid", "getpeername", "setresgid", "getgroups", "chdir", "socketpair"
     };
 
     const StringSet<> all_syscall = {"read", "write", "open", "close", "stat", "fstat", "lstat", "poll", "lseek",
@@ -435,10 +436,10 @@ namespace {
             handleStruct(cs, 1, 1, 9, syscallName, "st_blksize_v");
             handleStruct(cs, 1, 1, 10, syscallName, "st_block_v");
         }
-        if (syscallName.equals("epoll_wait")) {
+        else if (syscallName.equals("epoll_wait")) {
             handleStruct(cs, 1, 1, 0, syscallName, "events_v");
         }
-        if (syscallName.equals("epoll_wait")) {
+        else if (syscallName.equals("epoll_wait")) {
             handleStruct(cs, 1, 1, 1, syscallName, "data_v");
         }
 //        if (syscallName.equals("poll")) {
@@ -447,19 +448,22 @@ namespace {
 //        if (syscallName.equals("poll")) {
 //            handleStruct(cs, 0, 1, 0, syscallName, "fd_v");
 //        }
-        if (syscallName.equals("prlimit")) {
+        else if (syscallName.equals("prlimit")) {
             handleStruct(cs, 3, 1, 0, syscallName, "rlim_cur_v");
             handleStruct(cs, 3, 1, 1, syscallName, "rlim_max_v");
         }
-        if (syscallName.equals("getsockopt")) {
+        else if (syscallName.equals("getsockopt")) {
             handleArgument(cs, 3, syscallName, "optval_v");
             handleArgument(cs, 4, syscallName, "optlen_v");
         }
-        if (syscallName.equals("accept4") || syscallName.equals("accept")) {
+        else if (syscallName.equals("accept4")
+        || syscallName.equals("accept")
+        || syscallName.equals("getsockname")
+        || syscallName.equals("getpeername")) {
             handleArgument(cs, 1, syscallName, "addr_v");
             handleArgument(cs, 2, syscallName, "addrlen_v");
         }
-        if (syscallName.equals("sendfile")) {
+        else if (syscallName.equals("sendfile")) {
             handleArgument(cs, 2, syscallName, "offset_v");
         }
     }
