@@ -30,7 +30,8 @@ namespace {
             "setuid", "setgid", "connect", "prlimit", "getsockopt", "accept", "accept4",
             "sendfile", "getcwd", "writev", "setsid", "sendto", "chroot", "getdents", "getppid", "dup",
             "nanosleep", "getsockname", "pipe", "clock_gettime", "select", "geteuid", "getegid", "uname",
-            "recvmsg", "getpgrp", "setresuid", "getpeername", "setresgid", "getgroups", "chdir", "socketpair"
+            "recvmsg", "getpgrp", "setresuid", "getpeername", "setresgid", "getgroups", "chdir", "socketpair",
+            "poll", "sysinfo"
     };
 
     const StringSet<> all_syscall = {"read", "write", "open", "close", "stat", "fstat", "lstat", "poll", "lseek",
