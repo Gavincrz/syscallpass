@@ -32,7 +32,7 @@ namespace {
             "nanosleep", "getsockname", "pipe", "clock_gettime", "select", "geteuid", "getegid", "uname",
             "recvmsg", "getpgrp", "setresuid", "getpeername", "setresgid", "getgroups", "chdir", "socketpair",
             "poll", "sysinfo", "readlink", "link", "chmod", "mkdir", "unlink", "rename", "pread", "pread64",
-            "symlink", "setitimer", "statfs", "wait4"
+            "symlink", "setitimer", "statfs", "wait4", "sendmsg", "epoll_create1", "recvfrom"
     };
 
     const StringSet<> all_syscall = {"read", "write", "open", "close", "stat", "fstat", "lstat", "poll", "lseek",
@@ -470,6 +470,10 @@ namespace {
         }
         else if (syscallName.equals("wait4")) {
             handleArgument(cs, 1, syscallName, "wstatus_v");
+        }
+        else if (syscallName.equals("recvfrom")) {
+            handleArgument(cs, 4, syscallName, "addr_v");
+            handleArgument(cs, 5, syscallName, "addrlen_v");
         }
     }
 }
