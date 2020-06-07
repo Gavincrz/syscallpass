@@ -31,7 +31,8 @@ namespace {
             "sendfile", "getcwd", "writev", "setsid", "sendto", "chroot", "getdents", "getppid", "dup",
             "nanosleep", "getsockname", "pipe", "clock_gettime", "select", "geteuid", "getegid", "uname",
             "recvmsg", "getpgrp", "setresuid", "getpeername", "setresgid", "getgroups", "chdir", "socketpair",
-            "poll", "sysinfo"
+            "poll", "sysinfo", "readlink", "link", "chmod", "mkdir", "unlink", "rename", "pread", "pread64",
+            "symlink", "setitimer", "statfs", "wait4"
     };
 
     const StringSet<> all_syscall = {"read", "write", "open", "close", "stat", "fstat", "lstat", "poll", "lseek",
@@ -466,6 +467,9 @@ namespace {
         }
         else if (syscallName.equals("sendfile")) {
             handleArgument(cs, 2, syscallName, "offset_v");
+        }
+        else if (syscallName.equals("wait4")) {
+            handleArgument(cs, 1, syscallName, "wstatus_v");
         }
     }
 }
