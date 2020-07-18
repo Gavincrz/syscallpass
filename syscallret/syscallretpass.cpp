@@ -23,7 +23,7 @@ using namespace llvm;
 namespace {
 
     const StringSet<> syscallSet = {
-            "read", "open", "openat", "lstat", "write",
+            "read", "open", "openat", "lstat64", "stat64", "fstat64", "write",
             "close", "stat", "fstat", "lstat", "getpid",
             "lseek", "epoll_wait", "dup2", "dup3", "epoll_create", "poll", "socket",
             "setsockopt", "listen", "epoll_ctl", "setgroups", "getuid", "access", "getgid",
