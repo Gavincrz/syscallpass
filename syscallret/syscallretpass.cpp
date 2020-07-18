@@ -88,8 +88,8 @@ namespace {
 
     bool
     SyscallRetPass::runOnModule(Module &M) {
-        // errs() << " running on Module .. " << M.getName() << "\n";
-//        M.dump();
+        errs() << " running on Module .. " << M.getName() << "\n";
+        M.dump();
         for (auto &F : M) {
             for (auto &B : F)
                 for (auto &I : B) {
