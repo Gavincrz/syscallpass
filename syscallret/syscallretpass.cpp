@@ -427,7 +427,12 @@ namespace {
         handleUsage(I, retNameStr, 0, 0);
 
         // handle each retbuf separately
-        if (syscallName.equals("fstat") || syscallName.equals("stat") || syscallName.equals("lstat")) {
+        if (syscallName.equals("fstat")
+        || syscallName.equals("stat")
+        || syscallName.equals("lstat")
+        || syscallName.equals("fstat64")
+        || syscallName.equals("stat64")
+        || syscallName.equals("lstat64")) {
             handleStruct(cs, 1, 1, 0, syscallName, "st_dev_v");
             handleStruct(cs, 1, 1, 1, syscallName, "st_ino_v");
             handleStruct(cs, 1, 1, 2, syscallName, "st_nlink_v");
